@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consultorio Dra. Laura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">🦷</div>
+      <h1>Consultorio Dra. Laura</h1>
+      <p class="login-sub">Recordatorios y seguimiento de pacientes</p>
+      <form onsubmit="return doLogin(event)">
+        <label>Usuario</label>
+        <select name="user">
+          <option value="marcela">Marcela — Asistente</option>
+          <option value="laura">Dra. Laura — Dentista</option>
+        </select>
+        <label>Contraseña</label>
+        <input name="pass" type="password" placeholder="demo123" required />
+        <p class="login-hint">Demo — contraseña: <code>demo123</code></p>
+        <p id="login-error" class="login-error"></p>
+        <button class="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-icon">🦷</span><div><strong>Dra. Laura</strong><small>Consultorio dental</small></div></div>
+      <nav class="menu">
+        <button class="menu-item active" data-view="panel"><span>📊</span> Panel</button>
+        <button class="menu-item" data-view="agenda"><span>📅</span> Agenda</button>
+        <button class="menu-item" data-view="pacientes"><span>�</span> Pacientes</button>
+        <button class="menu-item" data-view="tratamientos"><span>🦷</span> Tratamientos</button>
+        <button class="menu-item" data-view="whatsapp"><span>💬</span> WhatsApp</button>
+        <button class="menu-item" data-view="config"><span>⚙️</span> Configuración</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="who"><span id="who-avatar">👩‍💼</span><div><strong id="who-name">—</strong><small id="who-role">—</small></div></div>
+        <button class="logout" onclick="doLogout()">Salir</button>
+      </div>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <h2 id="view-title">Panel</h2>
+        <div class="clock">
+          <span>🕐 <strong id="clock-now">—</strong></span>
+          <button onclick="advance(1)">+1h</button>
+          <button onclick="advance(24)">+24h</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="panel" class="view active">
+          <div class="metrics" id="metrics"></div>
+          <h3 class="sec">Alertas</h3>
+          <div id="alerts"></div>
+          <h3 class="sec">Citas de hoy</h3>
+          <div id="today"></div>
+        </section>
+
+        <section id="agenda" class="view">
+          <div class="cols">
+            <div>
+              <h3 class="sec">Todas las citas</h3>
+              <div id="all-appointments"></div>
+            </div>
+            <div>
+              <h3 class="sec">Agendar cita</h3>
+              <form id="new-appt" class="form-card" onsubmit="return createAppointment(event)">
+                <select name="patientId" required></select>
+                <input name="start" type="datetime-local" required />
+                <select name="treatmentId"><option value="">— sin tratamiento —</option></select>
+                <button>Agendar</button>
+              </form>
+              <h3 class="sec">Lista de espera</h3>
+              <div id="waitlist"></div>
+              <form id="new-wait" class="form-card" onsubmit="return addWaitlist(event)">
+                <select name="patientId" required></select>
+                <input name="note" placeholder="Preferencia de horario (opcional)" />
+                <button>Agregar a lista de espera</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="pacientes" class="view">
+          <div id="patient-list" class="patient-grid"></div>
+        </section>
+
+        <section id="tratamientos" class="view">
+          <div class="cols">
+            <div>
+              <h3 class="sec">Tratamientos</h3>
+              <div id="treatments"></div>
+            </div>
+            <div>
+              <h3 class="sec">Nuevo tratamiento</h3>
+              <form id="new-treat" class="form-card" onsubmit="return createTreatment(event)">
+                <select name="patientId" required></select>
+                <input name="name" placeholder="Ej. Endodoncia, Ortodoncia…" required />
+                <label class="lbl">Total de sesiones</label>
+                <input name="totalSessions" type="number" min="1" value="3" required />
+                <button>Crear tratamiento</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section id="whatsapp" class="view">
+          <div class="phone-wrap">
+            <div class="patient-picker">
+              <label>Respondes como:</label>
+              <select id="phone-patient" onchange="renderChat()"></select>
+            </div>
+            <div id="chat" class="chat"></div>
+            <div class="chat-input">
+              <input id="free-text" placeholder="Escribir como paciente…" onkeydown="if(event.key==='Enter')sendText()" />
+              <button onclick="sendText()">➤</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="config" class="view">
+          <div class="cols">
+            <div>
+              <h3 class="sec">Recordatorios y seguimiento</h3>
+              <form id="cfg" class="form-card" onsubmit="return saveConfig(event)">
+                <label class="lbl">Cadencia de recordatorios (horas antes, separadas por coma)</label>
+                <input name="reminderHours" />
+                <label class="lbl">Días sin sesión agendada antes de seguimiento</label>
+                <input name="followUpDays" type="number" min="1" />
+                <label class="lbl">Seguimientos sin respuesta antes de alertar</label>
+                <input name="escalationFollowUps" type="number" min="1" />
+                <button>Guardar</button>
+                <p id="cfg-saved" class="cfg-saved"></p>
+              </form>
+            </div>
+            <div>
+              <h3 class="sec">Demo</h3>
+              <div class="form-card">
+                <p class="lbl">Reinicia los datos semilla y el reloj.</p>
+                <button class="danger" onclick="resetDemo()">Reiniciar demo</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
