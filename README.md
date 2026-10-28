@@ -6,12 +6,17 @@ tratamientos multi-sesión (seguimiento automático con escalado a la asistente)
 ## Correr
 
 ```bash
-node server.js        # http://localhost:3000
-npm test              # tests del motor de recordatorios/seguimiento
-node src/seed.js --reset   # regenerar datos de demo
+node server.js           # http://localhost:3000 (modo servidor, estado en data.json)
+npm test                 # tests del motor de recordatorios/seguimiento
+node scripts/reset.mjs   # regenerar datos de demo
 ```
 
 Sin dependencias externas: Node 18+.
+
+**Versión estática (GitHub Pages)**: la misma UI corre sin servidor — si
+`/api/state` no responde, el frontend cambia a modo local y ejecuta la misma
+lógica (`src/`) en el navegador, con el estado en `localStorage`. Basta abrir
+`index.html` o publicar la raíz del repo en GitHub Pages.
 
 ## Cómo probar la demo
 

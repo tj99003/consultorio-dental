@@ -45,7 +45,26 @@ function doLogout() {
 }
 
 /* ---------- api ---------- */
+// Si hay backend (node server.js / túnel) se usa HTTP; si no (GitHub Pages)
+// se usa el adaptador local que corre la misma lógica en el navegador.
+let MODE; // 'server' | 'local'
+let localApi;
+
 async function api(path, body) {
+  if (MODE === undefined) {
+    try {
+      const r = await fetch('/api/state');
+      MODE = r.ok ? 'server' : 'local';
+    } catch {
+      MODE = 'local';
+    }
+    if (MODE === 'local') localApi = await import('./api-local.js');
+  }
+  if (MODE === 'local') {
+    S = localApi.call(path, body);
+    render();
+    return;
+  }
   const r = await fetch(path, body !== undefined
     ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     : {});
@@ -228,7 +247,15 @@ if (sessionStorage.getItem('user')) {
   $('app').classList.remove('hidden');
   refresh();
 }
-setInterval(() => {
+setInterval(async () => {
   if (!sessionStorage.getItem('user')) return;
-  fetch('/api/state').then(r => r.json()).then(d => { S = d; render(); });
+  if (MODE === 'local') {
+    S = localApi.call('/api/state');
+    render();
+    return;
+  }
+  try {
+    const r = await fetch('/api/state');
+    if (r.ok) { S = await r.json(); render(); }
+  } catch { /* servidor caído: reintenta en el siguiente ciclo */ }
 }, 4000);

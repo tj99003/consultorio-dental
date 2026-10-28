@@ -1,5 +1,5 @@
 // Datos semilla de la demo. El reloj simulado arranca hoy a las 08:00.
-function seed() {
+export function seed() {
   const now = new Date();
   now.setSeconds(0, 0);
   now.setHours(8, 0, 0, 0);
@@ -60,13 +60,3 @@ function seed() {
     alerts: [],
   };
 }
-
-// Permite `node src/seed.js --reset` para regenerar data.json
-if (require.main === module) {
-  const fs = require('node:fs');
-  const path = require('node:path');
-  fs.writeFileSync(path.join(__dirname, '..', 'data.json'), JSON.stringify(seed(), null, 2));
-  console.log('data.json regenerado');
-}
-
-module.exports = { seed };

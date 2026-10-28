@@ -2,16 +2,16 @@
 // Cada action viene de un botón del mensaje saliente; el texto libre se
 // escala a la asistente en lugar de intentar interpretarlo.
 
-const wa = require('./whatsapp');
-const cal = require('./calendarProvider');
-const { freeSlots, isFree } = require('./slots');
-const { nextId } = require('./store');
-const { patientName } = require('./scheduler');
+import * as wa from './whatsapp.js';
+import * as cal from './calendarProvider.js';
+import { freeSlots, isFree } from './slots.js';
+import { nextId } from './ids.js';
+import { patientName } from './scheduler.js';
 
 const fmt = iso =>
   new Date(iso).toLocaleString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
-function offerFreedSlot(db, start) {
+export function offerFreedSlot(db, start) {
   // Se ofrece a todos en lista de espera; el primero que acepta se queda con el hueco.
   let offered = 0;
   for (const w of db.waitlist) {
@@ -57,7 +57,7 @@ function bookAppointment(db, patientId, start, treatmentId) {
 }
 
 // Maneja una action (botón) del simulador de teléfono.
-function handleAction(db, patientId, action) {
+export function handleAction(db, patientId, action) {
   const { type, payload = {} } = action;
   const appt = payload.appointmentId && db.appointments.find(a => a.id === payload.appointmentId);
 
@@ -118,7 +118,7 @@ function handleAction(db, patientId, action) {
 }
 
 // Texto libre: acuse al paciente + alerta para que la asistente responda.
-function handleText(db, patientId, text) {
+export function handleText(db, patientId, text) {
   wa.receive(db, patientId, text);
   wa.send(db, patientId, `Gracias por escribirnos, ${patientName(db, patientId)}. La asistente revisará tu mensaje y te responde a la brevedad.`);
   db.alerts.push({
@@ -133,7 +133,7 @@ function handleText(db, patientId, text) {
 
 // La asistente marca el resultado de una cita ya pasada. Idempotente: marcar
 // 'completed' dos veces no vuelve a contar la sesión.
-function markOutcome(db, appointmentId, outcome) {
+export function markOutcome(db, appointmentId, outcome) {
   const a = db.appointments.find(x => x.id === appointmentId);
   if (!a) return null;
   const wasCounted = a.status === 'completed';
@@ -152,5 +152,3 @@ function markOutcome(db, appointmentId, outcome) {
   }
   return a;
 }
-
-module.exports = { handleAction, handleText, markOutcome, offerFreedSlot };

@@ -3,9 +3,9 @@
 //   2. No-show automático de citas pasadas que nunca se confirmaron
 //   3. Seguimiento de tratamientos multi-sesión vencidos + escalado a la asistente
 
-const wa = require('./whatsapp');
-const { nextId } = require('./store');
-const { ACTIVE } = require('./slots');
+import * as wa from './whatsapp.js';
+import { nextId } from './ids.js';
+import { ACTIVE } from './slots.js';
 
 const HOUR = 3600000;
 const DAY = 86400000;
@@ -13,7 +13,7 @@ const DAY = 86400000;
 const fmt = iso =>
   new Date(iso).toLocaleString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
-function patientName(db, id) {
+export function patientName(db, id) {
   return (db.patients.find(p => p.id === id) || {}).name || 'paciente';
 }
 
@@ -23,7 +23,7 @@ function windowFor(diffH, windows) {
   return [...windows].sort((a, b) => a - b).find(w => diffH <= w);
 }
 
-function tick(db) {
+export function tick(db) {
   const now = new Date(db.now).getTime();
 
   // 1. Recordatorios
@@ -99,12 +99,10 @@ function tick(db) {
 }
 
 // Avanza el reloj simulado en pasos de 1h para respetar el orden de las ventanas.
-function advance(db, hours) {
+export function advance(db, hours) {
   for (let i = 0; i < hours; i++) {
     db.now = new Date(new Date(db.now).getTime() + HOUR).toISOString();
     tick(db);
   }
   return db.now;
 }
-
-module.exports = { tick, advance, patientName };

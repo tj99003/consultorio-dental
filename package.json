@@ -1,10 +1,11 @@
 {
   "name": "consultorio-dental",
   "version": "1.0.0",
+  "type": "module",
   "description": "Recordatorios y seguimiento de tratamientos para el consultorio de la Dra. Laura",
   "scripts": {
     "start": "node server.js",
-    "seed": "node src/seed.js --reset",
+    "seed": "node scripts/reset.mjs",
     "test": "node --test"
   }
 }

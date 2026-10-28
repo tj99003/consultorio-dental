@@ -6,9 +6,9 @@
 //   - Los mensajes entrantes llegan por webhook; en esta demo entran por
 //     POST /api/messages/inbound desde el simulador de teléfono de la UI.
 
-const { nextId } = require('./store');
+import { nextId } from './ids.js';
 
-function send(db, patientId, body, actions = [], meta = {}) {
+export function send(db, patientId, body, actions = [], meta = {}) {
   const msg = {
     id: nextId(db, 'm'),
     patientId,
@@ -22,7 +22,7 @@ function send(db, patientId, body, actions = [], meta = {}) {
   return msg;
 }
 
-function receive(db, patientId, body) {
+export function receive(db, patientId, body) {
   const msg = {
     id: nextId(db, 'm'),
     patientId,
@@ -35,5 +35,3 @@ function receive(db, patientId, body) {
   db.messages.push(msg);
   return msg;
 }
-
-module.exports = { send, receive };

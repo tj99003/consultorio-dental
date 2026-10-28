@@ -1,10 +1,10 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
-const { seed } = require('../src/seed');
-const { tick, advance } = require('../src/scheduler');
-const bot = require('../src/bot');
-const { metrics } = require('../src/metrics');
+import { seed } from '../src/seed.js';
+import { tick, advance } from '../src/scheduler.js';
+import * as bot from '../src/bot.js';
+import { metrics } from '../src/metrics.js';
 
 test('primer tick envía recordatorio de la ventana correcta y seguimiento de tratamiento vencido', () => {
   const db = seed(); // now = hoy 08:00; a1 a las 09:00 (diff 1h), a2 a las 11:00 (diff 3h)

@@ -1,5 +1,5 @@
 // Métricas del prompt: tasa de inasistencia y tasa de finalización de tratamientos.
-function metrics(db) {
+export function metrics(db) {
   const decided = db.appointments.filter(a => a.status === 'completed' || a.status === 'no_show');
   const noShows = decided.filter(a => a.status === 'no_show').length;
   const noShowRate = decided.length ? noShows / decided.length : 0;
@@ -17,5 +17,3 @@ function metrics(db) {
     totalTreatments: total,
   };
 }
-
-module.exports = { metrics };

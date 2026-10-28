@@ -8,13 +8,13 @@
 // La agenda en Google Calendar sigue siendo la fuente de verdad; este
 // adaptador es el único lugar que la lee/escribe.
 
-const { nextId } = require('./store');
+import { nextId } from './ids.js';
 
-function listEvents(db) {
+export function listEvents(db) {
   return db.appointments;
 }
 
-function createEvent(db, { patientId, start, treatmentId = null }) {
+export function createEvent(db, { patientId, start, treatmentId = null }) {
   const appt = {
     id: nextId(db, 'a'),
     patientId,
@@ -28,11 +28,9 @@ function createEvent(db, { patientId, start, treatmentId = null }) {
   return appt;
 }
 
-function updateEvent(db, id, patch) {
+export function updateEvent(db, id, patch) {
   const appt = db.appointments.find(a => a.id === id);
   if (!appt) return null;
   Object.assign(appt, patch);
   return appt;
 }
-
-module.exports = { listEvents, createEvent, updateEvent };

@@ -1,17 +1,17 @@
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const store = require('./src/store');
-const scheduler = require('./src/scheduler');
-const bot = require('./src/bot');
-const cal = require('./src/calendarProvider');
-const { metrics } = require('./src/metrics');
-const { nextId } = require('./src/store');
+import * as store from './src/store.js';
+import * as scheduler from './src/scheduler.js';
+import * as bot from './src/bot.js';
+import * as cal from './src/calendarProvider.js';
+import { metrics } from './src/metrics.js';
+import { nextId } from './src/ids.js';
 
 const PORT = process.env.PORT || 3000;
-const PUBLIC = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const ROOT = import.meta.dirname;
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
 
 let db = store.load();
 scheduler.tick(db); // tick inicial: dispara recordatorios/seguimientos ya vencidos
@@ -92,6 +92,10 @@ const routes = {
   },
 };
 
+// Estáticos: la raíz del repo, pero solo los archivos que la UI necesita.
+// Así el mismo index.html sirve en `node server.js` y en GitHub Pages.
+const STATIC_OK = [/^\/(index\.html)?$/, /^\/(public|src)\//];
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const json = (obj, code = 200) => {
@@ -126,11 +130,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     // estáticos
-    if (req.method === 'GET') {
-      const file = path.join(PUBLIC, url.pathname === '/' ? 'index.html' : url.pathname);
-      if (file.startsWith(PUBLIC) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
-        return res.end(fs.readFileSync(file));
+    if (req.method === 'GET' && STATIC_OK.some(rx => rx.test(url.pathname))) {
+      const file = path.join(ROOT, url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname));
+      const real = path.resolve(file);
+      if (real.startsWith(ROOT) && fs.existsSync(real) && fs.statSync(real).isFile()) {
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(real)] || 'application/octet-stream' });
+        return res.end(fs.readFileSync(real));
       }
     }
     json({ error: 'not found' }, 404);
